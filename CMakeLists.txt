@@ -256,6 +256,10 @@ else()
     # -------------------------------------------------------------------------
 
     Firmware/firmware.c
+    Drivers/swd/swd_phy.c
+    Drivers/swd/swd_timer.c
+    Drivers/swd/swd_protocol.c
+    Drivers/swd/swd_test.c
 
     )
 

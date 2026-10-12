@@ -74,6 +74,30 @@ static const GPIO_InitEntry_t gpio_init_table[] =
         },
     },
 
+    {
+        .name = SWD_SWCLK,
+        .config = {
+            .mode               = GPIO_MODE_OUTPUT,
+            .pull               = GPIO_PULL_NONE,
+            .speed              = GPIO_SPEED_LOW,
+            .output_type        = GPIO_OUTPUT_PUSH_PULL,
+            .alternate_function = 0U,
+            .initial_state      = GPIO_LOW,
+        },
+    },
+
+    {
+        .name = SWD_SWDIO,
+        .config = {
+            .mode               = GPIO_MODE_OUTPUT,
+            .pull               = GPIO_PULL_NONE,
+            .speed              = GPIO_SPEED_LOW,
+            .output_type        = GPIO_OUTPUT_PUSH_PULL,
+            .alternate_function = 0U,
+            .initial_state      = GPIO_HIGH,
+        },
+    },
+
     /* GPIO_MOTOR_*, GPIO_ADC_PHASE_* rows added once their
        electrical config (AF/speed for TIM+ADC pins) is fixed. */
 };
@@ -89,6 +113,9 @@ static const GPIO_HAL_Pin_t gpio_map[GPIO_COUNT] =
     #else
         [GPIO_LED] = { .port = LED_PORT, .pin = LED_PIN },      //LED_PORT and LED_PIN are defined in board.h
         [LOG_UART_TX] = { .port = LOG_UART_TX_PORT, .pin = LOG_UART_TX_PIN },
+        [SWD_SWCLK] = { .port = SWD_SWCLK_PORT, .pin = SWD_SWCLK_PIN },
+        [SWD_SWDIO] = { .port = SWD_SWDIO_PORT, .pin = SWD_SWDIO_PIN },
+
     #endif
 };
 

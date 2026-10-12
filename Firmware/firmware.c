@@ -6,6 +6,7 @@
 #include "timecore/timecore.h"
 #include "logger/frontend/logger.h"
 #include "version.h"
+#include "swd/swd_test.h"
 
 /* --------------------------------------------------------------------------
  * Firmware Setup
@@ -24,6 +25,7 @@ void Firmware_Setup(void)
     LOG_Init();
 
     Version_LOG();
+    SWD_Test_Run();
 
     LED_timer = TimeCore_CreateTimer(200);
 
@@ -44,7 +46,7 @@ void Firmware_Loop(void)
     if(TimeCore_ContinousExpiredEvent(LED_timer))
     {
         GPIO_Toggle(GPIO_LED); // Toggle the LED state
-        LOG_INFO(LOG_MODULE_SYSTEM,"Firmware Running..."); // Log a message indicating that the firmware is running
+        // LOG_INFO(LOG_MODULE_SYSTEM,"Firmware Running..."); // Log a message indicating that the firmware is running
         // LOG_Disable();   
     }
 

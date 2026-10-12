@@ -57,6 +57,9 @@ typedef enum
     LOG_UART_TX,
     BOOTLOADER_UART_TX,
     BOOTLOADER_UART_RX,
+    SWD_SWCLK,
+    SWD_SWDIO,
+
     GPIO_COUNT
 
 } GPIO_Name_t;

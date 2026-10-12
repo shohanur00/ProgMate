@@ -46,6 +46,23 @@
 #endif
 
 
+/* ============================================================================
+ * SWD Programmer Configuration
+ * ========================================================================== */
+
+/* SWD clock output */
+#define SWD_SWCLK_PORT                      GPIOC
+#define SWD_SWCLK_PIN                       13U
+
+/* SWD bidirectional data */
+#define SWD_SWDIO_PORT                      GPIOC
+#define SWD_SWDIO_PIN                       14U
+
+#define SWD_LINE_RESET_CYCLES               56U
+#define SWD_TURNAROUND_CYCLES               1U
+
+
+
 
 /* ============================================================================
  * GPIO Configuration
