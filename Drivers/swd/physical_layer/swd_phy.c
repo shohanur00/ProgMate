@@ -91,34 +91,6 @@ static void SWD_PHY_SetSWDIOInput(void)
 }
 
 
-static void SWD_PHY_LineReset(void)
-{
-    /*
-     * SWD line reset:
-     * - Configure SWDIO as output.
-     * - Hold SWDIO HIGH.
-     * - Generate at least 50 SWCLK cycles.
-     *
-     * This implementation is blocking and is intended only
-     * for initial PHY bring-up/testing.
-     */
-
-    SWD_PHY_SetSWDIOOutput();
-    SWD_PHY_WriteSWDIO(true);
-    SWD_PHY_WriteSWCLK(false);
-
-    for (uint32_t i = 0U; i < SWD_PHY_LINE_RESET_CYCLES; i++)
-    {
-        SWD_PHY_WriteSWCLK(true);
-        SWD_PHY_WriteSWCLK(false);
-    }
-
-    /* Leave the SWD bus in its idle state. */
-    SWD_PHY_WriteSWDIO(true);
-}
-
-
-
 /*
  * Host -> target bit.
  * Data is placed while the clock is low; the target samples it on the
@@ -170,19 +142,49 @@ static void SWD_PHY_Idle(uint8_t cycles)
 }
 
 
-/*
- * Host takes the line back after a target-driven phase: one turnaround
- * clock while SWDIO is still an input, then switch to output (low).
- */
-static void SWD_PHY_TurnaroundToHost(void)
+/* One full clock cycle: low -> high -> low. SWDIO is not touched. */
+static void SWD_PHY_ClockPulse(void)
 {
-    (void)SWD_PHY_ReadBit();
-    SWD_PHY_SetSWDIOOutput();
+    SWD_PHY_WriteSWCLK(false);
+    SWD_PHY_Delay();
+
+    SWD_PHY_WriteSWCLK(true);
+    SWD_PHY_Delay();
+
+    SWD_PHY_WriteSWCLK(false);
+}
+
+
+/* --------------------------------------------------------------------------
+ * Public API
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Hand SWDIO over from host to target.
+ * The host stops driving first, then one turnaround clock is issued
+ * while nobody drives the line. The target starts driving after it.
+ */
+void SWD_PHY_TurnaroundToTarget(void)
+{
+    SWD_PHY_SetSWDIOInput();     /* release SWDIO before the clock */
+    SWD_PHY_ClockPulse();       /* turnaround cycle               */
+}
+
+
+/*
+ * Take SWDIO back from the target.
+ * One turnaround clock is issued while SWDIO is still an input, then
+ * the host drives the line low (idle level).
+ */
+void SWD_PHY_TurnaroundToHost(void)
+{
+    SWD_PHY_ClockPulse();       /* turnaround cycle               */
+    SWD_PHY_SetSWDIOOutput();    /* host drives only after the clock */
     SWD_PHY_WriteSWDIO(false);
 }
 
 
-static uint8_t SWD_PHY_Parity32(uint32_t value)
+uint8_t SWD_PHY_Parity32(uint32_t value)
 {
     uint8_t parity = 0U;
 
@@ -194,10 +196,6 @@ static uint8_t SWD_PHY_Parity32(uint32_t value)
     return parity;
 }
 
-
-/* --------------------------------------------------------------------------
- * Public functions
- * -------------------------------------------------------------------------- */
 
 bool SWD_PHY_Init(void)
 {
@@ -215,4 +213,60 @@ bool SWD_PHY_Init(void)
     return true;
 }
 
+
+/*
+ * Drive 'count' bits (1..32) on SWDIO, LSB first.
+ * Precondition: the host owns SWDIO (output mode).
+ */
+void SWD_PHY_WriteBits(uint32_t value, uint8_t count)
+{
+    for (uint8_t i = 0U; i < count; i++)
+    {
+        SWD_PHY_WriteBit(((value >> i) & 1U) != 0U);
+    }
+}
+
+
+/*
+ * Sample 'count' bits (1..32) from SWDIO, LSB first.
+ * Precondition: the target owns SWDIO (host in input mode).
+ */
+uint32_t SWD_PHY_ReadBits(uint8_t count)
+{
+    uint32_t value = 0U;
+
+    for (uint8_t i = 0U; i < count; i++)
+    {
+        value |= ((uint32_t)SWD_PHY_ReadBit() << i);
+    }
+
+    return value;
+}
+
+
+void SWD_PHY_LineReset(void)
+{
+    /*
+     * SWD line reset:
+     * - Configure SWDIO as output.
+     * - Hold SWDIO HIGH.
+     * - Generate at least 50 SWCLK cycles.
+     *
+     * This implementation is blocking and is intended only
+     * for initial PHY bring-up/testing.
+     */
+
+    SWD_PHY_SetSWDIOOutput();
+    SWD_PHY_WriteSWDIO(true);
+    SWD_PHY_WriteSWCLK(false);
+
+    for (uint32_t i = 0U; i < SWD_PHY_LINE_RESET_CYCLES; i++)
+    {
+        SWD_PHY_WriteSWCLK(true);
+        SWD_PHY_WriteSWCLK(false);
+    }
+
+    /* Leave the SWD bus in its idle state. */
+    SWD_PHY_WriteSWDIO(true);
+}
 
