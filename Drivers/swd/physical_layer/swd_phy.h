@@ -31,7 +31,7 @@ bool SWD_PHY_Init(void);
  *
  * @param state true = HIGH, false = LOW.
  */
-void SWD_PHY_WriteClock(bool state);
+void SWD_PHY_WriteSWCLK(bool state);
 
 
 /**
@@ -39,7 +39,7 @@ void SWD_PHY_WriteClock(bool state);
  *
  * @param state true = HIGH, false = LOW.
  */
-void SWD_PHY_WriteData(bool state);
+void SWD_PHY_WriteSWDIO(bool state);
 
 
 /**
@@ -47,19 +47,19 @@ void SWD_PHY_WriteData(bool state);
  *
  * @return true if HIGH; otherwise false.
  */
-bool SWD_PHY_ReadData(void);
+bool SWD_PHY_ReadSWDIO(void);
 
 
 /**
  * @brief Configure SWDIO as an output.
  */
-void SWD_PHY_SetDataOutput(void);
+void SWD_PHY_SetSWDIOOutput(void);
 
 
 /**
  * @brief Configure SWDIO as an input.
  */
-void SWD_PHY_SetDataInput(void);
+void SWD_PHY_SetSWDIOInput(void);
 
 
 /**

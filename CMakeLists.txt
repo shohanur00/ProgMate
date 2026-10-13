@@ -256,10 +256,12 @@ else()
     # -------------------------------------------------------------------------
 
     Firmware/firmware.c
-    Drivers/swd/swd_phy.c
-    Drivers/swd/swd_timer.c
-    Drivers/swd/swd_protocol.c
-    Drivers/swd/swd_test.c
+    Drivers/swd/physical_layer/swd_phy.c
+    Drivers/swd/timer/swd_timer.c
+    Drivers/swd/protocol/swd_protocol.c
+    Drivers/swd/test/swd_test.c
+    Drivers/swd/swd.c
+    Drivers/swd/test/swd_phy_test.c
 
     )
 
