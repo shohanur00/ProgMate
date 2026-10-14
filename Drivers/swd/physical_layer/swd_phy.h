@@ -1,11 +1,11 @@
 /**
  * @file    swd_phy.h
- * @brief   SWD physical-layer interface.
+ * @brief   SWD physical layer (hardware only).
  *
- * @details Provides low-level SWCLK and SWDIO operations for
- *          communication with an SWD-compatible target.
- *
- * @target  STM32G431CBT6
+ * @details This layer knows pins, clock timing, bit order and SWDIO
+ *          direction. It knows nothing about requests, ACK values,
+ *          parity or registers. Everything protocol related lives in
+ *          swd_protocol.
  */
 
 #ifndef SWD_PHY_H
@@ -14,58 +14,41 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* --------------------------------------------------------------------------
- * Public API
- * -------------------------------------------------------------------------- */
-
-/**
- * @brief Initialize SWD GPIO pins.
- *
- * @return true if initialization succeeds; otherwise false.
+/*
+ * Configure the idle state: SWCLK low, SWDIO output high.
+ * Assumes GPIO_Init() has already configured the SWD pins.
+ * Returns true on success.
  */
 bool SWD_PHY_Init(void);
 
-
-/**
- * @brief Drive SWCLK to the requested logic level.
- *
- * @param state true = HIGH, false = LOW.
+/*
+ * Drive 'count' bits (1..32) on SWDIO, LSB first, one SWCLK cycle per bit.
+ * Precondition: the host owns SWDIO (output mode).
  */
-void SWD_PHY_WriteSWCLK(bool state);
+void SWD_PHY_WriteBits(uint32_t value, uint8_t count);
 
-
-/**
- * @brief Drive SWDIO to the requested logic level.
- *
- * @param state true = HIGH, false = LOW.
+/*
+ * Sample 'count' bits (1..32) from SWDIO, LSB first, one SWCLK cycle per bit.
+ * Precondition: SWDIO is released (see SWD_PHY_TurnaroundToTarget).
  */
-void SWD_PHY_WriteSWDIO(bool state);
+uint32_t SWD_PHY_ReadBits(uint8_t count);
 
-
-/**
- * @brief Read the current SWDIO logic level.
- *
- * @return true if HIGH; otherwise false.
+/*
+ * Host releases SWDIO (input), then one SWCLK cycle is issued while
+ * nobody drives the line.
  */
-bool SWD_PHY_ReadSWDIO(void);
+void SWD_PHY_TurnaroundToTarget(void);
 
-
-/**
- * @brief Configure SWDIO as an output.
+/*
+ * One SWCLK cycle while SWDIO is still an input, then the host drives
+ * SWDIO low (output).
  */
-void SWD_PHY_SetSWDIOOutput(void);
+void SWD_PHY_TurnaroundToHost(void);
 
-
-/**
- * @brief Configure SWDIO as an input.
- */
-void SWD_PHY_SetSWDIOInput(void);
-
-
-/**
- * @brief Generate the SWD line-reset sequence.
- *
- * @note Requires at least 50 SWCLK cycles with SWDIO HIGH.
+/*
+ * SWDIO high for SWD_PHY_LINE_RESET_CYCLES clocks.
+ * Optional: swd_protocol currently sends its own line reset using
+ * SWD_PHY_WriteBits(), so nothing calls this function.
  */
 void SWD_PHY_LineReset(void);
 

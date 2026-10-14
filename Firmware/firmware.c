@@ -68,7 +68,7 @@ void Firmware_Loop(void)
         // }
         // SWD_PHY_WriteData(state);
         // SWD_PHY_WriteClock(state);
-        SWD_PHY_TestReadDPIDCODE();
+        SWD_TestReadDPIDCODE();
 
     }
 

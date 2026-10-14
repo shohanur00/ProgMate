@@ -1,4 +1,3 @@
-
 /**
  * @file    swd_phy.c
  * @brief   SWD physical-layer implementation.
@@ -6,6 +5,7 @@
  * @target  STM32G431CBT6
  *
  * @details Controls SWCLK and SWDIO through the GPIO driver.
+ *          Hardware only: pins, clock timing, bit order, SWDIO direction.
  */
 
 #include "swd_phy.h"
@@ -18,22 +18,26 @@
  * -------------------------------------------------------------------------- */
 
 #define SWD_PHY_LINE_RESET_CYCLES    (56U)
-#ifndef SWD_TEST_HALF_PERIOD_LOOPS
-#define SWD_TEST_HALF_PERIOD_LOOPS    50U
+
+/*
+ * Half clock period delay (busy-loop iterations).
+ * Tune with a scope or logic analyzer.
+ */
+#ifndef SWD_PHY_HALF_PERIOD_LOOPS
+#define SWD_PHY_HALF_PERIOD_LOOPS    50U
 #endif
 
 /* --------------------------------------------------------------------------
- * Private SWD test helpers
+ * Private helpers
  * -------------------------------------------------------------------------- */
 
-static void SWD_PHY_TestDelay(void)
+static void SWD_PHY_Delay(void)
 {
-    for (volatile uint32_t i = 0U; i < SWD_TEST_HALF_PERIOD_LOOPS; i++)
+    for (volatile uint32_t i = 0U; i < SWD_PHY_HALF_PERIOD_LOOPS; i++)
     {
         __asm volatile ("nop");
     }
 }
-
 
 
 static void SWD_PHY_WriteSWCLK(bool state)
@@ -60,22 +64,16 @@ static bool SWD_PHY_ReadSWDIO(void)
 }
 
 
-static void SWD_PHY_SetSWDIOOutput(void)
+/*
+ * Make SWDIO an output. The output latch is loaded with 'level' first,
+ * so the pin starts at the requested level when the driver turns on.
+ */
+static void SWD_PHY_SetSWDIOOutput(bool level)
 {
     GPIO_Mode_t mode = GPIO_MODE_OUTPUT;
 
-    /*
-     * Preload the output latch HIGH before enabling output mode.
-     * This avoids briefly driving LOW when the output driver
-     * becomes active.
-     */
-    GPIO_Write(SWD_SWDIO, GPIO_HIGH);
-
-    GPIO_Ioctl(
-        SWD_SWDIO,
-        GPIO_IOCTL_SET_MODE,
-        &mode
-    );
+    GPIO_Write(SWD_SWDIO, level ? GPIO_HIGH : GPIO_LOW);
+    GPIO_Ioctl(SWD_SWDIO, GPIO_IOCTL_SET_MODE, &mode);
 }
 
 
@@ -100,10 +98,10 @@ static void SWD_PHY_WriteBit(bool bit)
 {
     SWD_PHY_WriteSWCLK(false);
     SWD_PHY_WriteSWDIO(bit);
-    SWD_PHY_TestDelay();
+    SWD_PHY_Delay();
 
     SWD_PHY_WriteSWCLK(true);
-    SWD_PHY_TestDelay();
+    SWD_PHY_Delay();
 
     SWD_PHY_WriteSWCLK(false);
 }
@@ -119,26 +117,16 @@ static bool SWD_PHY_ReadBit(void)
     bool bit;
 
     SWD_PHY_WriteSWCLK(false);
-    SWD_PHY_TestDelay();
+    SWD_PHY_Delay();
 
     bit = SWD_PHY_ReadSWDIO();
 
     SWD_PHY_WriteSWCLK(true);
-    SWD_PHY_TestDelay();
+    SWD_PHY_Delay();
 
     SWD_PHY_WriteSWCLK(false);
 
     return bit;
-}
-
-
-/* Clock out idle cycles with SWDIO low. The host must be driving SWDIO. */
-static void SWD_PHY_Idle(uint8_t cycles)
-{
-    for (uint8_t i = 0U; i < cycles; i++)
-    {
-        SWD_PHY_WriteBit(false);
-    }
 }
 
 
@@ -159,6 +147,15 @@ static void SWD_PHY_ClockPulse(void)
  * Public API
  * -------------------------------------------------------------------------- */
 
+bool SWD_PHY_Init(void)
+{
+    SWD_PHY_WriteSWCLK(false);
+    SWD_PHY_SetSWDIOOutput(true);       /* idle level: SWDIO high */
+
+    return true;
+}
+
+
 /*
  * Hand SWDIO over from host to target.
  * The host stops driving first, then one turnaround clock is issued
@@ -166,8 +163,8 @@ static void SWD_PHY_ClockPulse(void)
  */
 void SWD_PHY_TurnaroundToTarget(void)
 {
-    SWD_PHY_SetSWDIOInput();     /* release SWDIO before the clock */
-    SWD_PHY_ClockPulse();       /* turnaround cycle               */
+    SWD_PHY_SetSWDIOInput();            /* release SWDIO before the clock   */
+    SWD_PHY_ClockPulse();               /* turnaround cycle                 */
 }
 
 
@@ -178,39 +175,8 @@ void SWD_PHY_TurnaroundToTarget(void)
  */
 void SWD_PHY_TurnaroundToHost(void)
 {
-    SWD_PHY_ClockPulse();       /* turnaround cycle               */
-    SWD_PHY_SetSWDIOOutput();    /* host drives only after the clock */
-    SWD_PHY_WriteSWDIO(false);
-}
-
-
-uint8_t SWD_PHY_Parity32(uint32_t value)
-{
-    uint8_t parity = 0U;
-
-    for (uint8_t i = 0U; i < 32U; i++)
-    {
-        parity ^= (uint8_t)((value >> i) & 1U);
-    }
-
-    return parity;
-}
-
-
-bool SWD_PHY_Init(void)
-{
-    /*
-     * GPIO_Init() configures SWD_SWCLK and SWD_SWDIO
-     * according to the GPIO initialization table.
-     *
-     * Assumes the application has already called GPIO_Init()
-     * and both SWD pins are mapped in the current build.
-     */
-
-    GPIO_Write(SWD_SWCLK, GPIO_LOW);
-    GPIO_Write(SWD_SWDIO, GPIO_HIGH);
-
-    return true;
+    SWD_PHY_ClockPulse();               /* turnaround cycle                 */
+    SWD_PHY_SetSWDIOOutput(false);      /* host drives only after the clock */
 }
 
 
@@ -244,29 +210,17 @@ uint32_t SWD_PHY_ReadBits(uint8_t count)
 }
 
 
+/*
+ * Line reset: SWDIO high for SWD_PHY_LINE_RESET_CYCLES clocks.
+ * Note: swd_protocol.c already sends a line reset with WriteBits(), so
+ * this function is only needed if the protocol layer is changed to call it.
+ */
 void SWD_PHY_LineReset(void)
 {
-    /*
-     * SWD line reset:
-     * - Configure SWDIO as output.
-     * - Hold SWDIO HIGH.
-     * - Generate at least 50 SWCLK cycles.
-     *
-     * This implementation is blocking and is intended only
-     * for initial PHY bring-up/testing.
-     */
-
-    SWD_PHY_SetSWDIOOutput();
-    SWD_PHY_WriteSWDIO(true);
-    SWD_PHY_WriteSWCLK(false);
+    SWD_PHY_SetSWDIOOutput(true);
 
     for (uint32_t i = 0U; i < SWD_PHY_LINE_RESET_CYCLES; i++)
     {
-        SWD_PHY_WriteSWCLK(true);
-        SWD_PHY_WriteSWCLK(false);
+        SWD_PHY_ClockPulse();           /* same timing as every other bit   */
     }
-
-    /* Leave the SWD bus in its idle state. */
-    SWD_PHY_WriteSWDIO(true);
 }
-
