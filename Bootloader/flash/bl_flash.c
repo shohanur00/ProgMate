@@ -148,7 +148,7 @@ static bool BL_Flash_IsRangeValid_MetaData(
 }
 
 
-#define BL_FLASH_TIMEOUT_LOOPS  4000000UL   /* tune: worst-case page erase er cheye boro */
+#define BL_FLASH_TIMEOUT_LOOPS  4000000UL   
 
 static bool BL_Flash_WaitWhileBusy(void)
 {
