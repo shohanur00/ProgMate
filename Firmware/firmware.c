@@ -30,10 +30,6 @@ void Firmware_Setup(void)
     LOG_Init();
 
     Version_LOG();
-    // SWD_Test_Run();
-    
-    // SWD_PHY_Test_Run();
-    // SWD_PHY_Init();
 
     LED_timer = TimeCore_CreateTimer(200);
 
@@ -55,19 +51,6 @@ void Firmware_Loop(void)
     if(TimeCore_ContinousExpiredEvent(LED_timer))
     {
         GPIO_Toggle(GPIO_LED); // Toggle the LED state
-        // LOG_INFO(LOG_MODULE_SYSTEM,"Firmware Running..."); // Log a message indicating that the firmware is running
-        // LOG_Disable(); 
-        // if(state == false)
-        // {
-        //     state = true;
-            
-        // }
-        // else
-        // {
-        //     state = false;
-        // }
-        // SWD_PHY_WriteData(state);
-        // SWD_PHY_WriteClock(state);
         SWD_TestReadDPIDCODE();
 
     }
