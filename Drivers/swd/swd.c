@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "swd.h"
+#include "swd_types.h"
 #include "physical_layer/swd_phy.h"
 #include "protocol/swd_protocol.h"
 
@@ -131,4 +132,30 @@ SWD_Status_t SWD_Transfer(bool ap, bool read, uint8_t addr, uint32_t *data)
     }
 
     return status;
+}
+
+
+
+SWD_Status_t SWD_ReadDPRegister(uint8_t address, uint32_t *data)
+{
+    if (data == NULL)
+    {
+        return SWD_STATUS_INVALID_PARAM;
+    }
+
+    *data = 0U;
+
+    return SWD_Transfer(false, true, address, data);
+}
+
+
+SWD_Status_t SWD_WriteDPRegister(uint8_t address, uint32_t data)
+{
+    return SWD_Transfer(false, false, address, &data);
+}
+
+
+SWD_Status_t SWD_ReadDPIDCODE(uint32_t *idcode)
+{
+    return SWD_ReadDPRegister(0x00U, idcode);
 }

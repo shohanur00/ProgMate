@@ -7,10 +7,6 @@
  */
 void SWD_TestProtocolPackets(void);
 
-/*
- * Hardware test: SWD_Init -> SWD_Connect -> read DPIDR.
- * Expected on a Cortex-M0+ target: 0x0BC11477.
- */
-void SWD_TestReadDPIDCODE(void);
+
 
 #endif /* SWD_TEST_H */

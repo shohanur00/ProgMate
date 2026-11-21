@@ -8,8 +8,8 @@
 #include "logger/frontend/logger.h"
 #include "version.h"
 #include "swd/physical_layer/swd_phy.h"
+#include "swd/swd.h"
 #include "swd/test/swd_test.h"
-#include "swd/test/swd_phy_test.h"
 #include <stdbool.h>
 
 
@@ -47,12 +47,15 @@ void Firmware_Loop(void)
 {
     /* Firmware main loop */
     static bool state = false;
+    uint32_t dpidcode;
 
     if(TimeCore_ContinousExpiredEvent(LED_timer))
     {
         GPIO_Toggle(GPIO_LED); // Toggle the LED state
-        SWD_TestReadDPIDCODE();
-
+        // SWD_ReadDPIDCODE(&dpidcode); // Read the DPIDCODE from the SWD interface
+        // LOG_INFO(LOG_MODULE_SWD,"DPIDCODE: 0x%X", dpidcode); // Log the DPIDCODE value
+        // SWD_TestReadDPIDCODE();
+        SWD_TestDPRegisters();
     }
 
     TimeCore_MainLoop();                                    // Call the main loop function for time-based tasks

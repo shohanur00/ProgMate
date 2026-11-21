@@ -11,7 +11,8 @@ typedef enum
     SWD_STATUS_PARITY,      /* Read data parity mismatch                    */
     SWD_STATUS_TIMEOUT,     /* Polled condition did not occur in time       */
     SWD_STATUS_PARAM,       /* Invalid argument                             */
-    SWD_STATUS_HW_ERROR     /* Hardware / PHY initialization failed         */
+    SWD_STATUS_HW_ERROR,     /* Hardware / PHY initialization failed         */
+    SWD_STATUS_INVALID_PARAM
 } SWD_Status_t;
 
 #endif /* SWD_TYPES_H */

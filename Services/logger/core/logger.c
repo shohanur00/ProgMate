@@ -27,7 +27,9 @@ static LOG_State_t log_state =
 static const char *const module_names[LOG_MODULE_MAX] =
 {
     [LOG_MODULE_SYSTEM] = "SYSTEM",
-    [LOG_MODULE_BOOTLOADER] = "BOOTLOADER"
+    [LOG_MODULE_BOOTLOADER] = "BOOTLOADER",
+    [LOG_MODULE_APPLICATION] = "APPLICATION",
+    [LOG_MODULE_SWD] = "SWD",
 };
 
 #pragma USER ends

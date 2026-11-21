@@ -101,6 +101,8 @@ typedef enum
 {
     LOG_MODULE_SYSTEM = 0U,
     LOG_MODULE_BOOTLOADER,
+    LOG_MODULE_APPLICATION,
+    LOG_MODULE_SWD,
     /* Add application-specific modules above this entry. */
     /* Example:
      * LOG_MODULE_MOTOR,

@@ -112,37 +112,3 @@ void SWD_TestProtocolPackets(void)
 }
 
 
-void SWD_TestReadDPIDCODE(void)
-{
-    SWD_Status_t status;
-    uint32_t idcode = 0U;
-
-    LOG_INFO(LOG_MODULE_SYSTEM, "SWD: Starting DP IDCODE read");
-
-    status = SWD_Init();
-    if (status != SWD_STATUS_OK)
-    {
-        LOG_ERROR(LOG_MODULE_SYSTEM,
-                  "SWD: Init failed: %s", SWD_TestStatusName(status));
-        return;
-    }
-
-    status = SWD_Connect();
-    if (status != SWD_STATUS_OK)
-    {
-        LOG_ERROR(LOG_MODULE_SYSTEM,
-                  "SWD: Connect failed: %s", SWD_TestStatusName(status));
-        return;
-    }
-
-    /* DP register 0x00 read = DPIDR. */
-    status = SWD_Transfer(false, true, 0x00U, &idcode);
-    if (status != SWD_STATUS_OK)
-    {
-        LOG_ERROR(LOG_MODULE_SYSTEM,
-                  "SWD: DPIDR read failed: %s", SWD_TestStatusName(status));
-        return;
-    }
-
-    LOG_INFO(LOG_MODULE_SYSTEM, "SWD: DP IDCODE = 0x%X", idcode);
-}
