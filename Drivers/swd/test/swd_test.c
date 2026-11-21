@@ -19,6 +19,27 @@ static const char *SWD_TestStatusName(SWD_Status_t status)
         case SWD_STATUS_OK:
             return "OK";
 
+        case SWD_STATUS_WAIT:
+            return "WAIT";
+
+        case SWD_STATUS_FAULT:
+            return "FAULT";
+
+        case SWD_STATUS_NO_ACK:
+            return "NO_ACK";
+
+        case SWD_STATUS_PARITY:
+            return "PARITY";
+
+        case SWD_STATUS_TIMEOUT:
+            return "TIMEOUT";
+
+        case SWD_STATUS_PARAM:
+            return "PARAM";
+
+        case SWD_STATUS_HW_ERROR:
+            return "HW_ERROR";
+
         case SWD_STATUS_INVALID_PARAM:
             return "INVALID_PARAM";
 
@@ -120,4 +141,46 @@ void SWD_TestDPRegisters(void)
              (unsigned long)ctrl_stat);
 
     LOG_INFO(LOG_MODULE_SWD, "SWD: DP register test passed");
+}
+
+
+
+void SWD_TestDebugSystemPower(void)
+{
+    SWD_Status_t status;
+
+    LOG_INFO(LOG_MODULE_SWD,
+             "SWD: Requesting Debug/System power");
+
+    status = SWD_Init();
+    if (status != SWD_STATUS_OK)
+    {
+        LOG_ERROR(LOG_MODULE_SWD,
+                  "SWD: Init failed: %s",
+                  SWD_TestStatusName(status));
+        return;
+    }
+
+    status = SWD_Connect();
+    if (status != SWD_STATUS_OK)
+    {
+        LOG_ERROR(LOG_MODULE_SWD,
+                  "SWD: Connect failed: %s",
+                  SWD_TestStatusName(status));
+        return;
+    }
+
+    status = SWD_RequestDebugSystemPower();
+
+    if (status != SWD_STATUS_OK)
+    {
+        LOG_ERROR(LOG_MODULE_SWD,
+                  "SWD: Power-up failed: status=%d, name=%s",
+                  (int)status,
+                  SWD_TestStatusName(status));
+        return;
+    }
+
+    LOG_INFO(LOG_MODULE_SWD,
+             "SWD: Debug/System power-up successful");
 }

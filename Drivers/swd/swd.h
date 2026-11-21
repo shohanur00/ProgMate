@@ -74,5 +74,15 @@ SWD_Status_t SWD_WriteDPRegister(uint8_t address, uint32_t data);
 SWD_Status_t SWD_ReadDPIDCODE(uint32_t *idcode);
 
 
+/**
+ * @brief Request the Debug System Power.
+ *
+ * This function requests the target to enter debug system power mode.
+ *
+ * @return SWD_STATUS_OK on success, otherwise an error status.
+ */
+
+SWD_Status_t SWD_RequestDebugSystemPower(void);
+
 
 #endif /* SWD_H */

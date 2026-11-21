@@ -8,6 +8,7 @@ extern "C" {
 
 void SWD_TestReadDPIDCODE(void);
 void SWD_TestDPRegisters(void);
+void SWD_TestDebugSystemPower(void);
 
 #ifdef __cplusplus
 }

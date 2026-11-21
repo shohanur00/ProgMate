@@ -159,3 +159,70 @@ SWD_Status_t SWD_ReadDPIDCODE(uint32_t *idcode)
 {
     return SWD_ReadDPRegister(0x00U, idcode);
 }
+
+
+
+/* --------------------------------------------------------------------------
+ * DP CTRL/STAT register definitions
+ * -------------------------------------------------------------------------- */
+
+#define SWD_DP_REG_CTRL_STAT             0x04U
+
+#define SWD_CTRL_STAT_CDBGPWRUPREQ       (1UL << 28U)
+#define SWD_CTRL_STAT_CDBGPWRUPACK       (1UL << 29U)
+
+#define SWD_CTRL_STAT_CSYSPWRUPREQ       (1UL << 30U)
+#define SWD_CTRL_STAT_CSYSPWRUPACK       (1UL << 31U)
+
+#define SWD_CTRL_STAT_POWER_REQ_MASK     \
+    (SWD_CTRL_STAT_CDBGPWRUPREQ | SWD_CTRL_STAT_CSYSPWRUPREQ)
+
+#define SWD_CTRL_STAT_POWER_ACK_MASK     \
+    (SWD_CTRL_STAT_CDBGPWRUPACK | SWD_CTRL_STAT_CSYSPWRUPACK)
+
+#define SWD_POWERUP_TIMEOUT_POLLS        1000U
+
+
+/* --------------------------------------------------------------------------
+ * Request Debug and System Power
+ * -------------------------------------------------------------------------- */
+
+
+SWD_Status_t SWD_RequestDebugSystemPower(void)
+{
+    SWD_Status_t status;
+    uint32_t ctrl_stat = 0U;
+
+    /* Request Debug and System power-up. */
+    status = SWD_WriteDPRegister(
+        SWD_DP_REG_CTRL_STAT,
+        SWD_CTRL_STAT_POWER_REQ_MASK
+    );
+
+    if (status != SWD_STATUS_OK)
+    {
+        return status;
+    }
+
+    /* Wait for power-up acknowledgements. */
+    for (uint32_t i = 0U; i < SWD_POWERUP_TIMEOUT_POLLS; i++)
+    {
+        status = SWD_ReadDPRegister(
+            SWD_DP_REG_CTRL_STAT,
+            &ctrl_stat
+        );
+
+        if (status != SWD_STATUS_OK)
+        {
+            return status;
+        }
+
+        if ((ctrl_stat & SWD_CTRL_STAT_POWER_ACK_MASK) ==
+            SWD_CTRL_STAT_POWER_ACK_MASK)
+        {
+            return SWD_STATUS_OK;
+        }
+    }
+
+    return SWD_STATUS_TIMEOUT;
+}
