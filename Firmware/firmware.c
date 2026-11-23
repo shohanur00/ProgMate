@@ -56,7 +56,9 @@ void Firmware_Loop(void)
         // LOG_INFO(LOG_MODULE_SWD,"DPIDCODE: 0x%X", dpidcode); // Log the DPIDCODE value
         // SWD_TestReadDPIDCODE();
         // SWD_TestDPRegisters();
-        SWD_TestDebugSystemPower();
+        // SWD_TestDebugSystemPower();
+        SWD_TestMassErase();
+        SWD_TestFlashProgram();
     }
 
     TimeCore_MainLoop();                                    // Call the main loop function for time-based tasks

@@ -204,6 +204,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 
     Version/version.c
     
+    
 
 )
 
@@ -262,6 +263,8 @@ else()
     Drivers/swd/test/swd_test.c
     Drivers/swd/swd.c
     Drivers/swd/test/swd_phy_test.c
+    Drivers/swd/mem/swd_mem.c
+    Drivers/swd/flash/swd_flash.c
 
     )
 
