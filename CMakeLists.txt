@@ -265,6 +265,9 @@ else()
     Drivers/swd/test/swd_phy_test.c
     Drivers/swd/mem/swd_mem.c
     Drivers/swd/flash/swd_flash.c
+    Drivers/swd/test/swd_flash_test.c
+    Drivers/swd/program/swd_program.c
+    Drivers/swd/test/target_image.c
 
     )
 

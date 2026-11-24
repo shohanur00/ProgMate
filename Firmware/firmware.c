@@ -11,6 +11,7 @@
 #include "swd/swd.h"
 #include "swd/test/swd_test.h"
 #include <stdbool.h>
+#include "swd/test/swd_flash_test.h"
 
 
 /* --------------------------------------------------------------------------
@@ -37,6 +38,8 @@ void Firmware_Setup(void)
 
     TimeCore_StartTimer(LED_timer);
 
+    SWD_FlashTestImage();
+
 }
 
 /* --------------------------------------------------------------------------
@@ -57,8 +60,9 @@ void Firmware_Loop(void)
         // SWD_TestReadDPIDCODE();
         // SWD_TestDPRegisters();
         // SWD_TestDebugSystemPower();
-        SWD_TestMassErase();
-        SWD_TestFlashProgram();
+        // SWD_FlashTestAll();
+        // SWD_TestFlashProgram();
+        // SWD_FlashTestSafe();
     }
 
     TimeCore_MainLoop();                                    // Call the main loop function for time-based tasks
